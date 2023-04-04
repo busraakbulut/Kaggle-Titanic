@@ -73,4 +73,4 @@ submission_preds = log_reg.predict(test)
 df = pd.DataFrame({"PassengerId": test_ids.values,
                    "Survived": submission_preds,
                    })
-df.to_csv("submission1.csv", index=False)
+df.to_csv("submission.csv", index=False)
