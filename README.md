@@ -7,6 +7,7 @@ To run the code,  please first make sure you installed the imported libraries.
 
 To install libraries :
 pip install pandas
+
 pip install sklearn
 pip install matplotlib
 pip install seaborn
