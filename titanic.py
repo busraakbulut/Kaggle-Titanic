@@ -20,7 +20,7 @@ plt.show()
 sns.countplot(x="Survived", data=train, hue="Sex")
 plt.show()
 # age
-sns.barplot(x="Survived", y="Age", data=train)
+sns.barplot(x="Survived", y="Age", data=train, hue="Pclass")
 plt.show()
 # To check every status, looked the correlation heatmap
 sns.heatmap(train.corr(), cmap="YlGnBu")
@@ -38,7 +38,7 @@ print(test.isnull().sum())
 def null_values(train):
     train = train.drop(["Ticket", "PassengerId", "Name", "Cabin"], axis=1)
 
-    cols = ["SibSp", "Parch", "Fare", "Age"]
+    cols = ["SibSp", "Parch", "Fare"]
     for col in cols:
         train[col].fillna(train[col].median(), inplace=True)
 
@@ -46,15 +46,38 @@ def null_values(train):
     return train
 
 
+def age_mean(col):
+    age = col[0]
+    pclass = col[1]
+    if pd.isnull(age):
+        if pclass == 1:
+            return round(train[train["Pclass"] == 1]["Age"].mean())
+        elif pclass == 2:
+            return round(train[train["Pclass"] == 2]["Age"].mean())
+        elif pclass == 3:
+            return round(train[train["Pclass"] == 3]["Age"].mean())
+    else:
+        return age
+
+
 train = null_values(train)
+train["Age"] = train[["Age", "Pclass"]].apply(age_mean, axis=1)
+
 test = null_values(test)
+test["Age"] = test[["Age", "Pclass"]].apply(age_mean, axis=1)
+
 le = preprocessing.LabelEncoder()
 columns = ["Sex", "Embarked"]
-
 for col in columns:
     train[col] = le.fit_transform(train[col])
     test[col] = le.transform(test[col])
     print(le.classes_)
+    
+print(train.info())
+print(train.isnull().sum())
+
+print(test.info())
+print(test.isnull().sum())
 
 y = train["Survived"]
 X = train.drop("Survived", axis=1)
@@ -64,9 +87,9 @@ X_train, X_val, y_train, y_val = train_test_split(
 log_reg = LogisticRegression(
     random_state=0, max_iter=1000).fit(X_train, y_train)
 log_reg_predict = log_reg.predict(X_val)
+
 print(classification_report(y_val, log_reg_predict))
 print(confusion_matrix(y_val, log_reg_predict))
-
 print(accuracy_score(y_val, log_reg_predict))
 
 submission_preds = log_reg.predict(test)
